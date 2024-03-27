@@ -11,10 +11,24 @@ class DifferenceController extends Controller
 
     public function compareFiles(Request $request)
     {
-        if ($request->with == 'Sof') {
-            $this->compareFilesSof($request);
-        } else if ($request->with == 'sof2') {
-            $this->compareFilesSof2($request);
+        $this->readFile($request->Dados);
+        $this->readFile($request->DadosAntigos);
+    }
+
+    public function readFile($file)
+    {
+        $row = 1;
+        if (($handle = fopen($file, "r")) !== FALSE) {
+            while (($data = fgetcsv($handle, 1000, ";")) !== FALSE) {  //  PHP way
+                $fields = count($data);
+                echo "<p> $fields fields in line $row: <br /></p>\n";
+                $row++;
+
+                for ($i = 0; $i < $fields; $i++) {
+                    echo $data[$i] . "<br />\n";
+                }
+            }
+            fclose($handle);
         }
     }
 
@@ -23,7 +37,7 @@ class DifferenceController extends Controller
      * FIRST WAY
      * Adapted from Stack Over Flow
      */
-    public function compareFilesSof($request)
+    public function compareFilesSof(Request $request)
     {
         //---- init
         $strFileName1 = isset($request['Dados']) ? $request['Dados'] : '';
@@ -112,32 +126,5 @@ class DifferenceController extends Controller
             throw new Exception("File read error at $strFilename");
         }
         return $arrParsed;
-    }
-
-
-    public function compareFilesSof2($request)
-    {
-        $filename = "resources/csv/Dados.csv"; //lista completa
-        $base = "resources/csv/DadosAntigos.csv"; //mark if it is on here
-        $NOWcodes = array();
-
-        $file = fopen($base, 'r'); //registred opened
-        while (($line = fgetcsv($file)) !== FALSE) {
-            array_push($NOWcodes, $line[0]);
-        }
-        fclose($file);
-
-        $file = fopen($filename, 'r'); //all nomes
-        while (($line = fgetcsv($file)) !== FALSE) {
-
-            if (!in_array($line[0], $NOWcodes)) {
-                $inscrito = 'yellow;';
-            } else {
-                $inscrito = '#9999ff;';
-            }
-
-            echo '<span style="background-color: ' . $inscrito . '" title="' . $line[0] . '">' . $line[2] . '</span><br>';
-        }
-        fclose($file);
     }
 }
