@@ -9,4 +9,4 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
-Route::get('/compare', [DifferenceController::class, 'compareFiles']);
+Route::post('/compare', [DifferenceController::class, 'compareFiles']);
