@@ -8,29 +8,150 @@ use SplFileObject;
 
 class DifferenceController extends Controller
 {
+    /**
+     * 1 - diferença entre os dois CSVs.
+     * 2 - Dizer quais são as linhas que existem nos dois ficheiros e que são exactamente iguais...
+     * 3 - Quais são as linhas que já existiam mas foram atualizadas.
+     * 4 - quais são as linhas novas que foram adicionadas.
+     */
+
+    const ROWS = [];
+    const FIELDS = [];
+
+
+    public function compareFilesGit(Request $request)
+    {
+        // Run git diff command using shell_exec and capture output
+        $diffOutput = shell_exec('git diff --no-index ../resources/csv/DadosAntigos.csv ../resources/csv/Dados.csv');
+
+        // Check for diff output
+        if ($diffOutput != null) {
+
+            // Split output into lines and apply highlighting function to each line
+            $lines = explode("\n", $diffOutput);
+            foreach ($lines as $line) {
+                if (substr($line, 0, 1) === '-') {
+                    echo "<span style='color:red'>$line</span><br>";
+                } elseif (substr($line, 0, 1) === '+') {
+                    echo "<span style='color:green'>$line</span><br>";
+                } else {
+                    echo "$line<br>";
+                }
+            }
+
+        } else {
+            // Se não houver diferenças ou se ocorrer um erro, exiba uma mensagem
+            echo "Não foram encontradas diferenças. Ou o arquivo está inválido.";
+        }
+
+
+
+
+
+        // dd(shell_exec('git diff --no-index ' . $request->data . $request->oldData));
+
+
+
+
+
+        // Verifique se os arquivos CSV foram enviados via POST
+    // if ($request->hasFile('data') && $request->hasFile('oldData')) {
+    //     // Obtenha os arquivos CSV do request
+    //     $csv_atual = $request->file('data');
+    //     $csv_antigo = $request->file('oldData');
+
+    //     // Salve os arquivos temporários na pasta storage
+    //     $caminho_csv_atual = $csv_atual->store('temp');
+    //     $caminho_csv_antigo = $csv_antigo->store('temp');
+
+    //     // Execute o comando git diff usando shell_exec e capture a saída
+    //     $diff_output = shell_exec("git diff --no-index storage/$caminho_csv_atual storage/$caminho_csv_antigo");
+
+    //     // Verifique se houve saída do diff
+    //     if ($diff_output !== null) {
+    //         // Exiba a saída do diff
+    //         return "<pre>$diff_output</pre>";
+    //     } else {
+    //         // Se não houver diferenças ou se ocorrer um erro, retorne uma mensagem
+    //         return "Não foram encontradas diferenças entre os arquivos.";
+    //     }
+    // } else {
+    //     // Se os arquivos CSV não forem enviados via POST, retorne uma mensagem de erro
+    //     return "Arquivos CSV não foram enviados.";
+    // }
+    }
+
+
+
+
 
     public function compareFiles(Request $request)
     {
-        $this->readFile($request->Dados);
-        $this->readFile($request->DadosAntigos);
+        $this->readFile($request->data, $request->oldData);
     }
 
-    public function readFile($file)
+    public function readFile($data, $oldData)
     {
-        $row = 1;
-        if (($handle = fopen($file, "r")) !== FALSE) {
-            while (($data = fgetcsv($handle, 1000, ";")) !== FALSE) {  //  PHP way
-                $fields = count($data);
-                echo "<p> $fields fields in line $row: <br /></p>\n";
-                $row++;
+        $row = 0;
+        if (($handle1 = fopen($data, "r")) !== FALSE && ($handle2 = fopen($oldData, "r")) !== FALSE) {
+            while (($rowData = fgetcsv($handle1, 1000, ";")) !== FALSE && ($rowOldData = fgetcsv($handle2, 1000, ";")) !== FALSE) {  //  PHP way
+                $qtFieldsData = isset($rowData) ? count($rowData) : 0;
+                $qtFieldsOldData = isset($rowData) ? count($rowOldData) : 0;
 
-                for ($i = 0; $i < $fields; $i++) {
-                    echo $data[$i] . "<br />\n";
+
+
+                if(($qtFieldsData && $qtFieldsOldData) != 0) {
+                    if($rowData == $rowOldData) {
+                        echo "<p> As linhas <b>" . $row . "</b> são exactamente iguais... <br /></p>\n";
+                    } else {
+                        echo "<p> As linhas <b>" . $row . "</b> já existiam mas foram atualizadas. </p>";
+
+                        for ($i = 0; $i < $qtFieldsData; $i++) {
+                            echo "O campo <b>" . $rowData[$i] . "</b> foi alterado e agora o dado é: <b>" . $rowOldData[$i] . "</b> <br />\n";
+
+                        }
+                    }
+                } else {
+                    if($qtFieldsData > $qtFieldsOldData) {
+                        echo "O arquivo Dados possui a linha" . $row . " que o arquivo DadosAntigos não possui: ";
+
+                    } else if ($qtFieldsOldData > $qtFieldsData) {
+                        echo "O arquivo DadosAntigos possui a linha" . $row . " que o arquivo Dados não possui: ";
+                    }
                 }
+
+
+
+                // echo "<p> $qtFieldsData fields of Dados in line $row: <br /></p>\n";
+                // print_r($data);
+                // echo "<p> $qtFieldsData fields of DadosAntigos in line $row: <br /></p>\n";
+
+                  //
+
+                // echo $data[$row] . "<br />\n";
+
+                $row++;
             }
-            fclose($handle);
+            // echo $qtFieldsData > $qtFieldsOldData
+            //     ? " Foram adicionadas " . $rowData-$rowOldData . " novas linhas"
+            //     : " Foram removidas " . $rowOldData-$rowData . " linhas existentes";
+
+            fclose($handle1);
+            fclose($handle2);
         }
     }
+
+    // public function compareField()
+    // {
+    //     for ($i = 0; $i < $fieldsData; $i++) {
+    //         if($data[$i] == $oldData[$i]) {
+    //             echo "o campo " . $data[$i] . " não foi alterado! <br />\n";
+    //         } else {
+    //             echo "o campo " . $data[$i] . " foi alterado e agora o dado é: " . $oldData[$i] . "<br />\n";
+    //         }
+
+    //     }
+    // }
 
 
     /**

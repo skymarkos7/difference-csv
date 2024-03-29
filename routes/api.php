@@ -8,6 +8,7 @@ use App\Http\Controllers\DifferenceController;
 //     return $request->user();
 // })->middleware('auth:sanctum');
 
+Route::get('/compare/git', [DifferenceController::class, 'compareFilesGit']);
 
 Route::post('/compare', [DifferenceController::class, 'compareFiles']);
 
