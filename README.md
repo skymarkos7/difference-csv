@@ -13,7 +13,13 @@
     - Explain: To create container Sail of laravel 
 3. Open the front project and can using. Can you do this opening the front-end files or on [github pages](https://skymarkos7.github.io/front-compare/).
 
+<hr>
+## Comparison methodologies  
 
+- <b>Git:</b> It is possible to check files of any format using the computer's git as a tool and capturing only the data output. With a few more adjustments it would be possible to check the difference between files of any format.
+
+- <b>Simple</b>.
+<hr>
 
 ## License
 
