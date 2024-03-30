@@ -16,6 +16,35 @@ class DifferenceController extends Controller
      * 4 - quais são as linhas novas que foram adicionadas.
      */
 
+     public function saveFile(Request $request)
+    {
+        // Verify if files are already sended
+        if ($request->hasFile('data') && $request->hasFile('oldData')) {
+            // Obter os arquivos enviados
+            $dataFile = $request->file('data');
+            $oldDataFile = $request->file('oldData');
+
+            // Default path to files
+            $path = public_path('../resources/csv');
+
+            // Verify if exist files with the same name and delete then
+            if (file_exists("$path/Dados.csv")) {
+                unlink("$path/Dados.csv");
+            }
+            if (file_exists("$path/DadosAntigos.csv")) {
+                unlink("$path/DadosAntigos.csv");
+            }
+
+            // save new files on folder resources/csv
+            $dataFile->move($path, 'Dados.csv');
+            $oldDataFile->move($path, 'DadosAntigos.csv');
+
+            return "Arquivos salvos com sucesso.";
+        } else {
+            return "Por favor, envie ambos os arquivos.";
+        }
+    }
+
     public function compareFilesGit(Request $request)
     {
         // Run git diff command using shell_exec and capture output
@@ -50,107 +79,44 @@ class DifferenceController extends Controller
         }
     }
 
-
-    public function saveFile(Request $request)
+    public function compareFilesSimple(Request $request)
     {
-        // Verificar se os arquivos foram enviados
-        if ($request->hasFile('data') && $request->hasFile('oldData')) {
-            // Obter os arquivos enviados
-            $dataFile = $request->file('data');
-            $oldDataFile = $request->file('oldData');
+        // Path from file CSV
+        $dataFile = '../resources/csv/Dados.csv';
+        $oldDataFile = '../resources/csv/DadosAntigos.csv';
 
-            // Definir o caminho absoluto para a pasta resources/csv
-            $path = public_path('../resources/csv');
-
-            // Verificar se já existem arquivos com os mesmos nomes e excluí-los
-            if (file_exists("$path/Dados.csv")) {
-                unlink("$path/Dados.csv");
-            }
-            if (file_exists("$path/DadosAntigos.csv")) {
-                unlink("$path/DadosAntigos.csv");
-            }
-
-            // Salvar os novos arquivos na pasta resources/csv
-            $dataFile->move($path, 'Dados.csv');
-            $oldDataFile->move($path, 'DadosAntigos.csv');
-
-            return "Arquivos salvos com sucesso.";
-        } else {
-            return "Por favor, envie ambos os arquivos.";
-        }
-    }
-
-
-
-
-
-    public function compareFiles(Request $request)
-    {
-        $this->readFile($request->data, $request->oldData);
-    }
-
-    public function readFile($data, $oldData)
-    {
         $row = 0;
-        if (($handle1 = fopen($data, "r")) !== FALSE && ($handle2 = fopen($oldData, "r")) !== FALSE) {
-            while (($rowData = fgetcsv($handle1, 1000, ";")) !== FALSE && ($rowOldData = fgetcsv($handle2, 1000, ";")) !== FALSE) {  //  PHP way
+        if (($handle1 = fopen($dataFile, "r")) !== FALSE && ($handle2 = fopen($oldDataFile, "r")) !== FALSE) {
+            while (($rowData = fgetcsv($handle1, 1000, ";")) !== FALSE && ($rowOldData = fgetcsv($handle2, 1000, ";")) !== FALSE) {
                 $qtFieldsData = isset($rowData) ? count($rowData) : 0;
-                $qtFieldsOldData = isset($rowData) ? count($rowOldData) : 0;
+                $qtFieldsOldData = isset($rowOldData) ? count($rowOldData) : 0;
 
-
-
-                if(($qtFieldsData && $qtFieldsOldData) != 0) {
-                    if($rowData == $rowOldData) {
-                        echo "<p> As linhas <b>" . $row . "</b> são exactamente iguais... <br /></p>\n";
+                if ($qtFieldsData != 0 && $qtFieldsOldData != 0) {
+                    if ($rowData == $rowOldData) {
+                        echo "<p> As linhas <b>" . $row . "</b> são exatamente iguais... <br /></p>\n";
                     } else {
                         echo "<p> As linhas <b>" . $row . "</b> já existiam mas foram atualizadas. </p>";
 
                         for ($i = 0; $i < $qtFieldsData; $i++) {
                             echo "O campo <b>" . $rowData[$i] . "</b> foi alterado e agora o dado é: <b>" . $rowOldData[$i] . "</b> <br />\n";
-
                         }
                     }
                 } else {
-                    if($qtFieldsData > $qtFieldsOldData) {
-                        echo "O arquivo Dados possui a linha" . $row . " que o arquivo DadosAntigos não possui: ";
-
+                    if ($qtFieldsData > $qtFieldsOldData) {
+                        echo "O arquivo $dataFile possui a linha " . $row . " que o arquivo $oldDataFile não possui: ";
                     } else if ($qtFieldsOldData > $qtFieldsData) {
-                        echo "O arquivo DadosAntigos possui a linha" . $row . " que o arquivo Dados não possui: ";
+                        echo "O arquivo $oldDataFile possui a linha " . $row . " que o arquivo $dataFile não possui: ";
                     }
                 }
 
-
-
-                // echo "<p> $qtFieldsData fields of Dados in line $row: <br /></p>\n";
-                // print_r($data);
-                // echo "<p> $qtFieldsData fields of DadosAntigos in line $row: <br /></p>\n";
-
-                  //
-
-                // echo $data[$row] . "<br />\n";
-
                 $row++;
             }
-            // echo $qtFieldsData > $qtFieldsOldData
-            //     ? " Foram adicionadas " . $rowData-$rowOldData . " novas linhas"
-            //     : " Foram removidas " . $rowOldData-$rowData . " linhas existentes";
 
             fclose($handle1);
             fclose($handle2);
         }
     }
 
-    // public function compareField()
-    // {
-    //     for ($i = 0; $i < $fieldsData; $i++) {
-    //         if($data[$i] == $oldData[$i]) {
-    //             echo "o campo " . $data[$i] . " não foi alterado! <br />\n";
-    //         } else {
-    //             echo "o campo " . $data[$i] . " foi alterado e agora o dado é: " . $oldData[$i] . "<br />\n";
-    //         }
-
-    //     }
-    // }
 
 
     /**

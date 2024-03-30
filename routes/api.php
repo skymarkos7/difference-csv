@@ -12,7 +12,7 @@ Route::post('/compare/save', [DifferenceController::class, 'saveFile']);
 
 Route::get('/compare/git', [DifferenceController::class, 'compareFilesGit']);
 
-Route::post('/compare', [DifferenceController::class, 'compareFiles']);
+Route::get('/compare/simple', [DifferenceController::class, 'compareFilesSimple']);
 
 Route::post('/compare/sof', [DifferenceController::class, 'compareFilesSof']);
 
