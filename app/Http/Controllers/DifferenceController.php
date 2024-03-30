@@ -157,7 +157,29 @@ class DifferenceController extends Controller
                 }
             }
             if (!$found) {
-                $diff[] = $line1;
+                $diff[] = ['status' => 'removed', 'line' => $line1];
+            }
+        }
+
+        foreach ($data2 as $line2) {
+            $found = false;
+            foreach ($data1 as $line1) {
+                if (trim($line1) == trim($line2)) {
+                    $found = true;
+                    break;
+                }
+            }
+            if (!$found) {
+                $diff[] = ['status' => 'added', 'line' => $line2];
+            }
+        }
+
+        foreach ($data1 as $line1) {
+            foreach ($data2 as $line2) {
+                if (trim($line1) == trim($line2)) {
+                    $diff[] = ['status' => 'unchanged', 'line' => $line1];
+                    break;
+                }
             }
         }
 
@@ -171,10 +193,18 @@ class DifferenceController extends Controller
 
         $dataDiff = $this->compareCSV($file1, $file2);
 
-        echo "Differences:\n";
-        foreach ($dataDiff as $line) {
-            echo $line;
+        echo "<ul>";
+        foreach ($dataDiff as $item) {
+            $line = htmlspecialchars($item['line']);
+            if ($item['status'] == 'removed') {
+                echo "<li><span style='color:red;'>$line</span></li>";
+            } elseif ($item['status'] == 'added') {
+                echo "<li><span style='color:green;'>$line</span></li>";
+            } else {
+                echo "<li><span style='color:black;'>$line</span></li>";
+            }
         }
+        echo "</ul>";
     }
 
 
