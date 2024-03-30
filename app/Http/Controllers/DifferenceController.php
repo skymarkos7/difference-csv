@@ -192,7 +192,7 @@ class DifferenceController extends Controller
     public function compareFileLcs()
     {
         $file1 = '../resources/csv/Dados.csv';
-        $file2 = '../resources/csv bkp/DadosAntigos.csv';
+        $file2 = '../resources/csv/DadosAntigos.csv';
 
         if (!file_exists($file1) || !file_exists($file2))
             return "<h1>Ambos os arquivos precisam ser enviados</h1>";
