@@ -16,7 +16,7 @@ class DifferenceController extends Controller
      * 4 - quais são as linhas novas que foram adicionadas.
      */
 
-     public function saveFile(Request $request)
+    public function saveFile(Request $request)
     {
         // Verify if files are already sended
         if ($request->hasFile('data') && $request->hasFile('oldData')) {
@@ -93,19 +93,19 @@ class DifferenceController extends Controller
 
                 if ($qtFieldsData != 0 && $qtFieldsOldData != 0) {
                     if ($rowData == $rowOldData) {
-                        echo "<p> As linhas <b>" . $row . "</b> são exatamente iguais... <br /></p>\n";
+                        $response[] = "<p> As linhas <b>" . $row . "</b> são exatamente iguais... <br /></p>\n";
                     } else {
-                        echo "<p> As linhas <b>" . $row . "</b> já existiam mas foram atualizadas. </p>";
+                        $response[] = "<p> As linhas <b>" . $row . "</b> já existiam mas foram atualizadas. </p>";
 
                         for ($i = 0; $i < $qtFieldsData; $i++) {
-                            echo "O campo <b>" . $rowData[$i] . "</b> foi alterado e agora o dado é: <b>" . $rowOldData[$i] . "</b> <br />\n";
+                            $response[] = "O campo <b>" . $rowData[$i] . "</b> foi alterado e agora o dado é: <b>" . $rowOldData[$i] . "</b> <br />\n";
                         }
                     }
                 } else {
                     if ($qtFieldsData > $qtFieldsOldData) {
-                        echo "O arquivo $dataFile possui a linha " . $row . " que o arquivo $oldDataFile não possui: ";
+                        $response[] = "O arquivo $dataFile possui a linha " . $row . " que o arquivo $oldDataFile não possui: ";
                     } else if ($qtFieldsOldData > $qtFieldsData) {
-                        echo "O arquivo $oldDataFile possui a linha " . $row . " que o arquivo $dataFile não possui: ";
+                        $response[] = "O arquivo $oldDataFile possui a linha " . $row . " que o arquivo $dataFile não possui: ";
                     }
                 }
 
@@ -115,102 +115,67 @@ class DifferenceController extends Controller
             fclose($handle1);
             fclose($handle2);
         }
+        $response = implode($response);
+        return "<pre>$response</pre>";
     }
 
 
 
-    /**
-     * FIRST WAY
-     * Adapted from Stack Over Flow
-     */
-    public function compareFilesSof(Request $request)
+    function LCSLength($str1, $str2)
     {
-        //---- init
-        $strFileName1 = isset($request['Dados']) ? $request['Dados'] : '';
-        $strFileName2 = isset($request['DadosAntigos']) ? $request['DadosAntigos'] : '';
+        $m = strlen($str1);
+        $n = strlen($str2);
 
-        if (!$strFileName1) {
-            die("I need the first file (Dados)");
-        }
-        if (!$strFileName2) {
-            die("I need the second file (DadosAntigos)");
-        }
-
-        try {
-            $arrFile1 = $this->parseDataCsv($request['Dados']);
-            $arrFile2 = $this->parseDataCsv($request['DadosAntigos']);
-        } catch (Exception $e) {
-            die($e->getMessage());
+        $L = [];
+        for ($i = 0; $i <= $m; $i++) {
+            for ($j = 0; $j <= $n; $j++) {
+                if ($i == 0 || $j == 0)
+                    $L[$i][$j] = 0;
+                elseif ($str1[$i - 1] == $str2[$j - 1])
+                    $L[$i][$j] = $L[$i - 1][$j - 1] + 1;
+                else
+                    $L[$i][$j] = max($L[$i - 1][$j], $L[$i][$j - 1]);
+            }
         }
 
-        $rowCount1 = count($arrFile1);
-        $rowCount2 = count($arrFile2);
+        return $L[$m][$n];
+    }
 
-        $colCount1 = count($arrFile1[0]);
-        $colCount2 = count($arrFile2[0]);
+    function compareCSV($file1, $file2)
+    {
+        $data1 = file($file1);
+        $data2 = file($file2);
 
-        $highestRowCount = $rowCount1 > $rowCount2 ? $rowCount1 : $rowCount2;
-        $highestColCount = $colCount1 > $colCount2 ? $colCount1 : $colCount2;
+        $diff = [];
 
-        $row = 0;
-        $err = 0;
-
-        //---- code
-
-        echo "<h2>comparing $strFileName1 and $strFileName2</h2>";
-        echo "\n<table border=1>";
-        echo "\n<tr><th>Err<th>Row#<th>Col#<th>Data in $strFileName1<th>Data in $strFileName2";
-        while ($row < $highestRowCount) {
-            if (!isset($arrFile1[$row])) {
-                echo "\n<tr><td>Row missing in $strFileName1<th>$row";
-                $err++;
-            } elseif (!isset($arrFile1[$row])) {
-                echo "\n<tr><td>Row missing in $strFileName2<th>$row";
-                $err++;
-            } else {
-                $col = 0;
-                while ($col < $highestColCount) {
-                    if (!isset($arrFile1[$row][$col])) {
-                        echo "\n<tr><td>Data missing in $strFileName1<td>$row<td>$col<td><td>" . htmlentities($arrFile2[$row][$col]);
-                        $err++;
-                    } elseif (!isset($arrFile2[$row][$col])) {
-                        echo "\n<tr><td>Data missing in $strFileName1<td>$row<td>$col<td>" . htmlentities($arrFile1[$row][$col]) . "<td>";
-                        $err++;
-                    } elseif ($arrFile1[$row][$col] != $arrFile2[$row][$col]) {
-                        echo "\n<tr><td>Data mismatch";
-                        echo "<td>$row <td>$col";
-                        echo "<td>" . htmlentities($arrFile1[$row][$col]);
-                        echo "<td>" . htmlentities($arrFile2[$row][$col]);
-                        $err++;
-                    }
-                    $col++;
+        foreach ($data1 as $line1) {
+            $found = false;
+            foreach ($data2 as $line2) {
+                if (trim($line1) == trim($line2)) {
+                    $found = true;
+                    break;
                 }
             }
-            $row++;
-        }
-        echo "</table>";
-
-        if (!$err) {
-            echo "<br/>\n<br/>\nThe two csv data files seem identical<br/>\n";
-        } else {
-            echo "<br/>\n<br/>\nThere are $err differences";
-        }
-    }
-
-    public function parseDataCsv($strFilename)
-    {
-        $arrParsed = array();
-        $handle = fopen($strFilename, "r");
-        if ($handle) {
-            while (!feof($handle)) {
-                $data = fgetcsv($handle, 0, ',', '"');
-                if (empty($data)) continue; //empty row
-                $arrParsed[] = $data;
+            if (!$found) {
+                $diff[] = $line1;
             }
-            fclose($handle);
-        } else {
-            throw new Exception("File read error at $strFilename");
         }
-        return $arrParsed;
+
+        return $diff;
     }
+
+    public function compareFileLcs()
+    {
+        $file1 = '../resources/csv/Dados.csv';
+        $file2 = '../resources/csv bkp/DadosAntigos.csv';
+
+        $dataDiff = $this->compareCSV($file1, $file2);
+
+        echo "Differences:\n";
+        foreach ($dataDiff as $line) {
+            echo $line;
+        }
+    }
+
+
 }
