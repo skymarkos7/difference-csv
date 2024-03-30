@@ -85,8 +85,15 @@ class DifferenceController extends Controller
         $dataFile = '../resources/csv/Dados.csv';
         $oldDataFile = '../resources/csv/DadosAntigos.csv';
 
+        if (!file_exists($dataFile) || !file_exists($oldDataFile))
+            return "<h1>Ambos os arquivos precisam ser enviados</h1>";
+
         $row = 0;
         if (($handle1 = fopen($dataFile, "r")) !== FALSE && ($handle2 = fopen($oldDataFile, "r")) !== FALSE) {
+            $response[] = "
+            <title> Compare SIMPLE </title>
+            <link rel='icon' href='https://upload.wikimedia.org/wikipedia/commons/4/4d/Simple_Shoes_logo.png'>
+            ";
             while (($rowData = fgetcsv($handle1, 1000, ";")) !== FALSE && ($rowOldData = fgetcsv($handle2, 1000, ";")) !== FALSE) {
                 $qtFieldsData = isset($rowData) ? count($rowData) : 0;
                 $qtFieldsOldData = isset($rowOldData) ? count($rowOldData) : 0;
@@ -116,7 +123,7 @@ class DifferenceController extends Controller
             fclose($handle2);
         }
         $response = implode($response);
-        return "<pre>$response</pre>";
+        return $response;
     }
 
 
@@ -153,6 +160,11 @@ class DifferenceController extends Controller
             foreach ($data2 as $line2) {
                 if (trim($line1) == trim($line2)) {
                     $found = true;
+                    if ($line1 !== $line2) {
+                        $diff[] = ['status' => 'modified', 'line' => $line1];
+                    } else {
+                        $diff[] = ['status' => 'unchanged', 'line' => $line1];
+                    }
                     break;
                 }
             }
@@ -174,15 +186,6 @@ class DifferenceController extends Controller
             }
         }
 
-        foreach ($data1 as $line1) {
-            foreach ($data2 as $line2) {
-                if (trim($line1) == trim($line2)) {
-                    $diff[] = ['status' => 'unchanged', 'line' => $line1];
-                    break;
-                }
-            }
-        }
-
         return $diff;
     }
 
@@ -191,17 +194,25 @@ class DifferenceController extends Controller
         $file1 = '../resources/csv/Dados.csv';
         $file2 = '../resources/csv bkp/DadosAntigos.csv';
 
-        $dataDiff = $this->compareCSV($file1, $file2);
+        if (!file_exists($file1) || !file_exists($file2))
+            return "<h1>Ambos os arquivos precisam ser enviados</h1>";
 
+        $dataDiff = $this->compareCSV($file1, $file2);
+        echo "
+        <title> Comparando com LCS </title>
+        <link rel='icon' href='https://lcs.com.br/wp-content/uploads/2021/08/cropped-logo.png'>
+        ";
         echo "<ul>";
         foreach ($dataDiff as $item) {
             $line = htmlspecialchars($item['line']);
             if ($item['status'] == 'removed') {
-                echo "<li><span style='color:red;'>$line</span></li>";
+                echo "<li><span style='color:red;'><b>Removed:</b> $line</span></li>";
             } elseif ($item['status'] == 'added') {
-                echo "<li><span style='color:green;'>$line</span></li>";
+                echo "<li><span style='color:green;'><b>Added:</b> $line</span></li>";
+            } elseif ($item['status'] == 'modified') {
+                echo "<li><span style='color:blue;'><b>Modified:</b> $line</span></li>";
             } else {
-                echo "<li><span style='color:black;'>$line</span></li>";
+                echo "<li><span style='color:black; font'><b>Unchanged:</b> $line</span></li>";
             }
         }
         echo "</ul>";
