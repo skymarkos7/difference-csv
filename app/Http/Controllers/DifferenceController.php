@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Exception;
 use Illuminate\Http\Request;
 use SplFileObject;
+use Illuminate\Support\Facades\Storage;
 
 class DifferenceController extends Controller
 {
@@ -15,10 +16,6 @@ class DifferenceController extends Controller
      * 4 - quais são as linhas novas que foram adicionadas.
      */
 
-    const ROWS = [];
-    const FIELDS = [];
-
-
     public function compareFilesGit(Request $request)
     {
         // Run git diff command using shell_exec and capture output
@@ -26,7 +23,14 @@ class DifferenceController extends Controller
 
         // Check for diff output
         if ($diffOutput != null) {
-
+            echo "
+                <h2> legend: </h3>
+                <p style='color:red'>   🔴 Red = Removed     </p>
+                <p style='color:green'> 🟢 Green = added     </p>
+                <p style='color:back'>  ⚫ Black = unchanged </p>
+                </br>
+                <hr>
+                ";
             // Split output into lines and apply highlighting function to each line
             $lines = explode("\n", $diffOutput);
             foreach ($lines as $line) {
@@ -38,47 +42,40 @@ class DifferenceController extends Controller
                     echo "$line<br>";
                 }
             }
-
         } else {
-            // Se não houver diferenças ou se ocorrer um erro, exiba uma mensagem
+            // If there are no differences or an error occurs, display a message
             echo "Não foram encontradas diferenças. Ou o arquivo está inválido.";
         }
+    }
 
 
+    public function saveFile(Request $request)
+    {
+        // Verificar se os arquivos foram enviados
+        if ($request->hasFile('data') && $request->hasFile('oldData')) {
+            // Obter os arquivos enviados
+            $dataFile = $request->file('data');
+            $oldDataFile = $request->file('oldData');
 
+            // Definir o caminho absoluto para a pasta resources/csv
+            $path = public_path('../resources/csv');
 
+            // Verificar se já existem arquivos com os mesmos nomes e excluí-los
+            if (file_exists("$path/Dados.csv")) {
+                unlink("$path/Dados.csv");
+            }
+            if (file_exists("$path/DadosAntigos.csv")) {
+                unlink("$path/DadosAntigos.csv");
+            }
 
-        // dd(shell_exec('git diff --no-index ' . $request->data . $request->oldData));
+            // Salvar os novos arquivos na pasta resources/csv
+            $dataFile->move($path, 'Dados.csv');
+            $oldDataFile->move($path, 'DadosAntigos.csv');
 
-
-
-
-
-        // Verifique se os arquivos CSV foram enviados via POST
-    // if ($request->hasFile('data') && $request->hasFile('oldData')) {
-    //     // Obtenha os arquivos CSV do request
-    //     $csv_atual = $request->file('data');
-    //     $csv_antigo = $request->file('oldData');
-
-    //     // Salve os arquivos temporários na pasta storage
-    //     $caminho_csv_atual = $csv_atual->store('temp');
-    //     $caminho_csv_antigo = $csv_antigo->store('temp');
-
-    //     // Execute o comando git diff usando shell_exec e capture a saída
-    //     $diff_output = shell_exec("git diff --no-index storage/$caminho_csv_atual storage/$caminho_csv_antigo");
-
-    //     // Verifique se houve saída do diff
-    //     if ($diff_output !== null) {
-    //         // Exiba a saída do diff
-    //         return "<pre>$diff_output</pre>";
-    //     } else {
-    //         // Se não houver diferenças ou se ocorrer um erro, retorne uma mensagem
-    //         return "Não foram encontradas diferenças entre os arquivos.";
-    //     }
-    // } else {
-    //     // Se os arquivos CSV não forem enviados via POST, retorne uma mensagem de erro
-    //     return "Arquivos CSV não foram enviados.";
-    // }
+            return "Arquivos salvos com sucesso.";
+        } else {
+            return "Por favor, envie ambos os arquivos.";
+        }
     }
 
 
