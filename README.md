@@ -5,15 +5,18 @@
 ## Tools that you need to run
 - git
 - docker
+- composer php
 
 ## To run the project
 
 1. Clone this repository ``git clone https://github.com/skymarkos7/difference-csv.git``
-2. Within the project of laravel run ``./vendor/bin/sail sail up -d`` 
+2. Within the project of laravel run ``composer install`` 
+    - you will need the vendor folder.
+3. Within the project of laravel run ``./vendor/bin/sail sail up -d`` 
     - Explain: To create container Sail of laravel 
     - You can too, run ``php artisan server`` but will be necessary change the routes in front to ``http://127.0.0.1:800/``
-3. Clone this repository `https://github.com/skymarkos7/front-compare.git`    
-4. Open the front project and can using. Can you do this opening the front-end files or on [github pages](https://skymarkos7.github.io/front-compare/).
+4. Clone this repository `https://github.com/skymarkos7/front-compare.git`    
+5. Open the front project and can using. Can you do this opening the front-end index.hml file or on [github pages](https://skymarkos7.github.io/front-compare/).
 
 <hr>
 ## Comparison methodologies  
