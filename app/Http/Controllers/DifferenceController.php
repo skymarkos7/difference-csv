@@ -24,6 +24,8 @@ class DifferenceController extends Controller
         // Check for diff output
         if ($diffOutput != null) {
             echo "
+                <title> Comparando com Git </title>
+                <link rel='icon' href='https://git-scm.com/images/logos/downloads/Git-Icon-1788C.png' type='image/png'>
                 <h2> legend: </h3>
                 <p style='color:red'>   🔴 Red = Removed     </p>
                 <p style='color:green'> 🟢 Green = added     </p>
