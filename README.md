@@ -15,6 +15,7 @@
 3. Within the project of laravel run ``./vendor/bin/sail sail up -d`` 
     - Explain: To create container Sail of laravel 
     - You can too, run ``php artisan server`` but will be necessary change the routes in front to ``http://127.0.0.1:800/``
+    - If you are using windows or wsl, It may be necessary to use ``bash ./vendor/laravel/sail/bin/sail up``
 4. Clone this repository `https://github.com/skymarkos7/front-compare.git`    
 5. Open the front project and can using. Can you do this opening the front-end index.hml file or on [github pages](https://skymarkos7.github.io/front-compare/).
 
