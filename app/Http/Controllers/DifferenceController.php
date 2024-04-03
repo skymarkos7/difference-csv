@@ -229,37 +229,37 @@ class DifferenceController extends Controller
         echo "</ul>";
     }
 
-    public function comparethinking()
-    {
-        echo phpinfo();
-        die();
-        // ini_set('auto_detect_line_endings', TRUE); // To mac
-        $rows = array_map('str_getcsv', file('../resources/csv/Dados.csv'));
-        $header = array_shift($rows);
-        $removeTrash = array_shift($rows);
-        $fields = [];
-        echo "<style>
-            table {
-                border-collapse: collapse;
-            }
-            tr {
-                border: solid;
-                border-left: solid;
-                border-width: 1px 0;
-            }
+    // public function comparethinking()
+    // {
+    //     echo phpinfo();
+    //     die();
+    //     // ini_set('auto_detect_line_endings', TRUE); // To mac
+    //     $rows = array_map('str_getcsv', file('../resources/csv/Dados.csv'));
+    //     $header = array_shift($rows);
+    //     $removeTrash = array_shift($rows);
+    //     $fields = [];
+    //     echo "<style>
+    //         table {
+    //             border-collapse: collapse;
+    //         }
+    //         tr {
+    //             border: solid;
+    //             border-left: solid;
+    //             border-width: 1px 0;
+    //         }
 
-        </style>";
+    //     </style>";
 
-        echo "<table>";
-        foreach ($rows as $key => $row) {
-            $fields[] = explode(';', $row[0]);
-            echo "<tr>";
-            foreach ($fields[0] as $key => $field) {
-                echo "<td> . $field . </td>";
-            }
-            echo "</tr>";
-        }
-        echo "</table";
-        // return "<pre> . $mountSheet . </pre>";
-    }
+    //     echo "<table>";
+    //     foreach ($rows as $key => $row) {
+    //         $fields[] = explode(';', $row[0]);
+    //         echo "<tr>";
+    //         foreach ($fields[0] as $key => $field) {
+    //             echo "<td> . $field . </td>";
+    //         }
+    //         echo "</tr>";
+    //     }
+    //     echo "</table";
+    //     // return "<pre> . $mountSheet . </pre>";
+    // }
 }
