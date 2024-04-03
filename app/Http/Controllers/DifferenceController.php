@@ -16,11 +16,14 @@ class DifferenceController extends Controller
      * 4 - quais são as linhas novas que foram adicionadas.
      */
 
+    /**
+     * Save file for caparation
+     */
     public function saveFile(Request $request)
     {
         // Verify if files are already sended
         if ($request->hasFile('data') && $request->hasFile('oldData')) {
-            // Obter os arquivos enviados
+            // Get the files sended.
             $dataFile = $request->file('data');
             $oldDataFile = $request->file('oldData');
 
@@ -45,6 +48,11 @@ class DifferenceController extends Controller
         }
     }
 
+    /**
+     * Using git to compare efficiently.
+     *
+     * Sometimes you don't need to reinvent the wheel.
+     */
     public function compareFilesGit(Request $request)
     {
         // Run git diff command using shell_exec and capture output
@@ -79,6 +87,9 @@ class DifferenceController extends Controller
         }
     }
 
+    /**
+     * line by line comparison.
+     */
     public function compareFilesSimple(Request $request)
     {
         // Path from file CSV
@@ -94,11 +105,11 @@ class DifferenceController extends Controller
             <title> Compare SIMPLE </title>
             <link rel='icon' href='https://upload.wikimedia.org/wikipedia/commons/4/4d/Simple_Shoes_logo.png'>
             ";
-            while (($rowData = fgetcsv($handle1, 1000, ";")) !== FALSE && ($rowOldData = fgetcsv($handle2, 1000, ";")) !== FALSE) {
+            while (($rowData = fgetcsv($handle2, 2000, ";")) !== FALSE && ($rowOldData = fgetcsv($handle1, 2000, ";")) !== FALSE) {
                 $qtFieldsData = isset($rowData) ? count($rowData) : 0;
                 $qtFieldsOldData = isset($rowOldData) ? count($rowOldData) : 0;
 
-                if ($qtFieldsData != 0 && $qtFieldsOldData != 0) {
+                if ($qtFieldsData !== 0 && $qtFieldsOldData !== 0) {
                     if ($rowData == $rowOldData) {
                         $response[] = "<p> As linhas <b>" . $row . "</b> são exatamente iguais... <br /></p>\n";
                     } else {
@@ -220,6 +231,8 @@ class DifferenceController extends Controller
 
     public function comparethinking()
     {
+        echo phpinfo();
+        die();
         // ini_set('auto_detect_line_endings', TRUE); // To mac
         $rows = array_map('str_getcsv', file('../resources/csv/Dados.csv'));
         $header = array_shift($rows);
