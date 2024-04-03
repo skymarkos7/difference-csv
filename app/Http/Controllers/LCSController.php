@@ -9,6 +9,9 @@ class LCSController extends Controller
 
     /**
      * LCS (Longest Common Subsequence)
+     *
+     * A longest common substring is a sequence of characters that appears in exactly the same order in both strings,
+     * but not necessarily contiguously
      */
     public function longestCommonSubsequence($str1, $str2)
     {
@@ -29,7 +32,7 @@ class LCSController extends Controller
             }
         }
 
-        // Constrói a LCS a partir da matriz LCS
+        // Builds the LCS from the LCS matrix
         $index = $L[$len1][$len2];
         $lcs = "";
         $i = $len1;
@@ -64,17 +67,23 @@ class LCSController extends Controller
         ";
     }
 
+    /**
+     * LCS (Longest Common Subsequence)
+     *
+     * A longer common substring is a sequence of consecutive
+     * characters that appears in both the strings.
+     */
     public function longestCommonSubstring($str1, $str2)
     {
         $len1 = strlen($str1);
         $len2 = strlen($str2);
 
-        // Inicializa a matriz para armazenar os comprimentos de substring comuns
+        // Initializes array to store common substring lengths
         $L = [];
-        $maxLength = 0; // Armazena o comprimento máximo da substring comum
-        $endIndex = 0; // Armazena o índice final da substring comum
+        $maxLength = 0; //  Stores the maximum length of the common substring
+        $endIndex = 0; // Stores the end index of the common substring
 
-        // Preenche a matriz LCS e encontra o comprimento máximo da substring comum
+        // Fill the LCS array and find the maximum length of the common substring
         for ($i = 0; $i < $len1; $i++) {
             for ($j = 0; $j < $len2; $j++) {
                 if ($str1[$i] == $str2[$j]) {
@@ -85,21 +94,20 @@ class LCSController extends Controller
 
                     if ($L[$i][$j] > $maxLength) {
                         $maxLength = $L[$i][$j];
-                        $endIndex = $i; // Atualiza o índice final da substring comum
+                        $endIndex = $i; // Updates the end index of the common substring
                     }
                 } else {
-                    $L[$i][$j] = 0; // Não há substring comum
+                    $L[$i][$j] = 0; // Don't have commom substring
                 }
             }
         }
 
-        // Retorna a substring comum mais longa
+        // Retorn the commom substring biggest
         return substr($str1, $endIndex - $maxLength + 1, $maxLength);
     }
 
     public function compareSubstring(Request $request)
     {
-        // Exemplo de uso
         $str1 = $request->str1;
         $str2 = $request->str2;
 
