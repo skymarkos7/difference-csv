@@ -16,9 +16,6 @@ Route::get('/compare/lcs', [DifferenceController::class, 'compareFileLcs']);
 
 // -------------------- After time --------------------------------------
 
-
-Route::get('/compare/think', [DifferenceController::class, 'comparethinking']);
-
 Route::get('/compare/lc-subsequence', [LCSController::class, 'compareSubsequence']);
 
 Route::get('/compare/lc-substring', [LCSController::class, 'compareSubstring']);
